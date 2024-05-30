@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %} {{ super() }} - {{ title }} {% endblock title %}
+{% block content %}
+<section style='padding-left:50px'>
+    <h1>Привет {{name}} у тебя почта {{email}}</h1>
+    <button>
+        <a href="/logout/">Logout</a>
+    </button>
+</section>
+{% endblock content%}
