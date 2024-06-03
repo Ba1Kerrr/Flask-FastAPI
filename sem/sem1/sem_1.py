@@ -1,63 +1,40 @@
-from flask import Flask
-from flask import render_template
+import os
+import threading
+import logging
+import time
 
-app = Flask(__name__)
+from pathlib import Path
 
-
-@app.route('/')
-def hello_world():
-    return render_template('user.html')
-
-
-@app.route('/about/')
-def about():
-    return 'about!'
+logger = logging.getLogger(__name__)
 
 
-@app.route('/contact/')
-def contact():
-    return 'contact'
+def process_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        contents = f.read()
+        counts_word = len(contents.split())
+        print(f'{f.name} содержит {counts_word} слов')
+# logger.info(f'{f.name} содержит {counts_word} слов')
 
 
-@app.route('/<int:num1>/<int:num2>')
-def summ_url(num1, num2):
-    return str(num1 + num2)
+def main():
 
+    dir_path = Path('.')
+    file_paths = os.walk(dir_path)
 
-@app.route('/<stroka>/')
-def len_url(stroka):
-    return str(len(stroka))
+    threads = []
+    for root, dirs, files in file_paths:
+        for file in files:
+            t = threading.Thread(target=process_file(os.path.join(root, file)))
+            threads.append(t)
+            t.start()
 
+    for t in threads:
+        t.join()
 
-@app.route('/get-html/')
-def get_html():
-    return ('''
-        <h1>Моя первая HTML страница</h1>
-        <p>Привет, мир!</p>
-      ''')
-
-
-@app.route('/students/')
-def get_students():
-    students = [
-        {"first_name": "denis", "last_name": "davydov", "age": 36},
-        {"first_name": "liza", "last_name": "davydova", "age": 33},
-        {"first_name": "danya", "last_name": "davydov", "age": 14},
-        {"first_name": "artem", "last_name": "davydov", "age": 6}
-    ]
-    return render_template('students.html', students=students)
-
-
-@app.route('/news/')
-def get_news():
-    news = [
-        {"title": "TITLE", "date": "15.05.2024", "description": "DESCRIPTION"},
-        {"title": "TITLE", "date": "15.05.2024", "description": "DESCRIPTION"},
-        {"title": "TITLE", "date": "15.05.2024", "description": "DESCRIPTION"},
-        {"title": "TITLE", "date": "15.05.2024", "description": "DESCRIPTION"}
-    ]
-    return render_template('news.html', news=news)
+print('Finish')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    start_time = time.time()
+    main()
+    print(f'{time.time() - start_time: .2f}')
